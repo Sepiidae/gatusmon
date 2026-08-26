@@ -1,11 +1,12 @@
 FROM python
 
-ADD app.py app.py
-ADD config.json config.json
-ADD startProd startProd
-ADD requirements.txt requirements.txt
+COPY app.py app.py
+COPY config.json config.json
+COPY startProd startProd
+COPY requirements.txt requirements.txt
+COPY templates /app/templates
+WORKDIR /app
 
-COPY templates templates
 
 RUN chmod +x startProd
 
