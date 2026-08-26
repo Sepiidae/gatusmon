@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "fau-monitor.fullname" . }}
+  labels:
+    {{- include "fau-monitor.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  className: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.type }}
+  type: {{ .Values.ingress.type }}
+  {{- end }}
+  {{- if .Values.ingress.service }}
+  ingressClassName: {{ .Values.ingress.service }}
+  {{- end }}
+          {{- toYaml .paths | nindent 10 }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  {{- if .Values.ingress.hosts }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+          {{- toYaml .paths | nindent 10 }}
+        paths:
+          {{- toYaml .paths | nindent 10 }}
+    {{- end }}
+  {{- else }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- toyaml .paths | nindent 10 }}
+    {{- end }}
+  {{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: fau-monitor
+description: A Helm chart for FAU OIT Service Monitor
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
