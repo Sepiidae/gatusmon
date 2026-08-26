@@ -1,11 +1,16 @@
 FROM python
 
+
+RUN mkdir /app
+
+WORKDIR /app
+
 COPY app.py app.py
 COPY config.json config.json
 COPY startProd startProd
 COPY requirements.txt requirements.txt
-COPY templates /app/templates
-WORKDIR /app
+COPY templates templates
+COPY static static
 
 
 RUN chmod +x startProd
