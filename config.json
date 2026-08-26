@@ -1,0 +1,56 @@
+{
+  "refresh_interval_seconds": 60,
+  "endpoints": [
+    "https://entappmon.fau.edu/api/v1/endpoints/statuses"
+  ],
+  "filters": {
+    "exclude": [
+      "*test*",
+      "*deprecated*"
+    ],
+    "include": [
+      {
+        "pattern": "*crystalreports*",
+        "group": "Reporting Services"
+      },
+      {
+        "pattern": "*canvas*",
+        "group": "Academic Applications"
+      },
+      {
+        "pattern": "*radiator*",
+        "group": "Radiator T"
+      }
+    ]
+  },
+  "default_group_contacts": {
+    "Radiator T": {
+      "name": "Wifi Support Team",
+      "phones": ["+1-561-289-8179 (Rhian)", "+1-561-555-0112 (Greg)"],
+      "emails": ["security@fau.edu", "hpc@fau.edu"]
+    },
+
+    "Reporting Services": {
+      "name": "Reporting Services Support Team",
+      "phones": ["+1-561-555-0111", "+1-561-555-0112"],
+      "emails": ["reports-help@fau.edu", "reports-escalations@fau.edu"]
+    },
+    "Academic Applications": {
+      "name": "Academic Tech On-Call Group",
+      "phones": ["+1-561-555-0222"],
+      "emails": ["acadtech@fau.edu", "canvas-admin@fau.edu"]
+    },
+    "General": {
+      "name": "OIT Central Helpdesk",
+      "phones": ["+1-561-555-0100", "+1-561-555-0101"],
+      "emails": ["helpdesk@fau.edu"]
+    }
+  },
+  "service_contacts": {
+    "as-apps---production_crystalreports": {
+      "name": "Crystal Reports Lead Specialist",
+      "phones": ["+1-561-555-0999", "+1-561-555-0998"],
+      "emails": ["crystal-lead@fau.edu", "crystal-backup@fau.edu"]
+    }
+  }
+}
