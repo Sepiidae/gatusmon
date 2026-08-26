@@ -299,8 +299,8 @@
           <strong style="color: #f8fafc; font-size: 0.8rem;">Assigned Contact</strong>
           <p style="margin: 0.2rem 0 0 0; font-size: 0.75rem;">
             <strong>Name:</strong> ${svc.contact.name || 'N/A'}<br>
-            ${svc.contact.phone ? `<strong>Phone:</strong> <a href="tel:${svc.contact.phone}" style="color: #60a5fa;">${svc.contact.phone}</a><br>` : ''}
-            ${svc.contact.email ? `<strong>Email:</strong> <a href="mailto:${svc.contact.email}" style="color: #60a5fa;">${svc.contact.email}</a>` : ''}
+            ${svc.contact.phones && svc.contact.phones.length > 0 ? svc.contact.phones.map(p => `<strong>Phone:</strong> <a href="tel:${p}" style="color: #60a5fa;">${p}</a>`).join('<br>') : ''}<br>
+            ${svc.contact.emails && svc.contact.emails.length > 0 ? svc.contact.emails.map(e => `<strong>Email:</strong> <a href="mailto:${e}" style="color: #60a5fa;">${e}</a>`).join('<br>') : ''}
           </p>
         `;
       } else {

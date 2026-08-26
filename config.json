@@ -5,8 +5,7 @@
   ],
   "filters": {
     "exclude": [
-      "*test*",
-      "*deprecated*"
+      "*test*"      
     ],
     "include": [
       {
@@ -19,7 +18,7 @@
       },
       {
         "pattern": "*radiator*",
-        "group": "Radiator T"
+        "group": "Radiator"
       }
     ]
   },
@@ -35,6 +34,12 @@
       "phones": ["+1-561-555-0111", "+1-561-555-0112"],
       "emails": ["reports-help@fau.edu", "reports-escalations@fau.edu"]
     },
+    "Radiator": {
+      "name": "Infrastructure Services Support Team",
+      "phones": ["+1-561-555-0111", "+1-561-555-0112"],
+      "emails": ["hpc@fau.edu", "networking@fau.edu"]
+    },
+
     "Academic Applications": {
       "name": "Academic Tech On-Call Group",
       "phones": ["+1-561-555-0222"],

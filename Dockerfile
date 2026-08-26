@@ -9,8 +9,8 @@ COPY templates templates
 
 RUN chmod +x startProd
 
-RUN python -m venv .venv
-RUN source .venv/bin/activate
-RUN pip install -r requirements.txt
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD [ "./startProd" ]

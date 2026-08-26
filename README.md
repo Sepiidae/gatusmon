@@ -53,7 +53,7 @@ To run the application locally with Flask's development server:
 chmod +x startDevelop
 ./startDevelop
 ```
-The app will be available at `http://localhost:6123`.
+The app will be available at `http://localhost:5001`.
 
 ### Production Mode
 To run the application using Gunicorn:
@@ -66,7 +66,7 @@ chmod +x startProd
 To build and run the application using Docker:
 ```bash
 docker build -t fau-monitor .
-docker run -p 6123:6123 fau-monitor
+docker run -p 5001:5001 fau-monitor
 ```
 
 ## 📝 License
