@@ -6,6 +6,12 @@ on:
     paths-ignore:
       - 'README.md'
       - '.gitignore'
+permissions:
+  contents: read
+  packages: write
+
+
+
 
 jobs:
   build:

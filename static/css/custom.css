@@ -1,0 +1,17 @@
+/* 
+  Custom Theme Overrides
+  To override the default colors, redefine the CSS variables 
+  defined in :root within style.css.
+*/
+
+:root {
+  /* Example: Uncomment and change these to customize your theme */
+  /* --fau-blue: #your-color; */
+  /* --fau-red: #your-color; */
+  /* --bg-dark: #your-color; */
+  /* --card-bg: #your-color; */
+  /* --status-ok: #your-color; */
+  /* --status-warning: #your-color; */
+  /* --status-critical: #your-color; */
+  /* --status-unknown: #your-color; */
+}

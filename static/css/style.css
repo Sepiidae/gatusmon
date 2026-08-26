@@ -1,0 +1,188 @@
+:root {
+  --fau-blue: #003366;
+  --fau-red: #CC0000;
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  
+  --status-ok: #10b981;
+  --status-warning: #f59e0b;
+  --status-critical: #ef4444;
+  --status-unknown: #3b82f6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-dark);
+  color: #f8fafc;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header {
+  background-color: var(--fau-blue);
+  border-bottom: 2px solid var(--fau-red);
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.timestamp {
+  font-size: 0.65rem;
+  opacity: 0.8;
+}
+
+main {
+  padding: 0.35rem;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden; /* Multi-column wraps horizontally to avoid vertical scroll */
+}
+
+/* Multi-Column Layout: Flow top-to-bottom, then left-to-right */
+.vertical-groups-wrapper {
+  column-width: 280px;
+  column-gap: 0.35rem;
+  height: 100%;
+}
+
+.group-container {
+  break-inside: avoid; /* Keeps group sections intact */
+  display: inline-block;
+  width: 100%;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 0.3rem 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.group-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  margin: 0 0 0.2rem 0;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 0.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.group-count {
+  font-size: 0.6rem;
+  color: #64748b;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+/* Ultra-Compact Micro Status Boxes (40x40px) */
+.square {
+  width: 40px;
+  height: 40px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem;
+  transition: transform 0.1s ease, filter 0.1s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  user-select: none;
+}
+
+.square:hover {
+  transform: scale(1.15);
+  filter: brightness(1.25);
+  z-index: 10;
+}
+
+.status-ok { background-color: var(--status-ok); color: #ffffff; }
+.status-warning { background-color: var(--status-warning); color: #000000; }
+.status-critical { background-color: var(--status-critical); color: #ffffff; }
+.status-unknown { background-color: var(--status-unknown); color: #ffffff; }
+
+.square .title {
+  font-weight: 700;
+  font-size: 0.5rem;
+  line-height: 1;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--card-bg);
+  border-top: 4px solid var(--fau-blue);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 440px;
+  padding: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.contact-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--fau-red);
+  padding: 0.5rem;
+  margin-top: 0.6rem;
+  border-radius: 0 4px 4px 0;
+}
+
+ul { padding-left: 1rem; margin: 0.3rem 0; font-size: 0.75rem; }
+li { margin-bottom: 0.15rem; }
