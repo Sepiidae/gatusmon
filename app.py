@@ -104,18 +104,21 @@ def get_effective_contact(key, group):
     return normalize_contact(group_contacts.get("General", None))
 
 def evaluate_status(service_data):
+    """Trust Gatus's pre-calculated health determination."""
+    # 1. Use top-level Gatus status if provided (e.g. "SUCCESS", "HEALTHY", or boolean success)
     results = service_data.get("results", [])
     if not results:
         return "unknown"
     
     latest = results[-1]
-    if latest.get("status") != 200:
+    
+    # 2. Check Gatus's built-in success flag
+    if latest.get("success") is True:
+        return "ok"
+    elif latest.get("success") is False:
         return "critical"
-    
-    conditions = latest.get("conditionResults", [])
-    all_passed = all(c.get("success", False) for c in conditions)
-    
-    return "ok" if (latest.get("success", False) and all_passed) else "warning"
+        
+    return "unknown"
 
 def background_fetcher():
     """Background loop with strict per-request timeouts and error isolation."""
