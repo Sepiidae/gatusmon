@@ -10,7 +10,7 @@
         "verify_ssl": false        
       },
       {
-        "url": "http://gatus.hpc.fau.edu/metrics",
+        "url": "http://temperature.hpc.fau.edu/metrics",
         "type": "prometheus",
         "verify_ssl": false
       }      
