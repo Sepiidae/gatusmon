@@ -6,6 +6,50 @@
   <title>FAU Status Monitor</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/custom.css">
+  <style>
+    /* Responsive Grid: Prevents aggressive wrapping by giving cards a wider min-width */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    /* Transform square styling into wide rectangle service cards */
+    .square {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 48px;
+      padding: 0.6rem 0.85rem;
+      border-radius: 6px;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+
+    .square .title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 0.5rem;
+    }
+
+    /* Inline helper styling for temperature tags */
+    .temp-tag {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+  </style>
 </head>
 <body>
 
@@ -69,10 +113,15 @@
         groups[groupName].forEach((svc, index) => {
           const sq = document.createElement('div');
           sq.className = `square status-${svc.status}`;
-          sq.title = `${svc.name} (${svc.status.toUpperCase()})`;
+          sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature}°C` : ''}`;
           sq.onclick = () => openModal(groupName, index);
 
-          sq.innerHTML = `<div class="title">${svc.name}</div>`;
+          let cardContent = `<div class="title" title="${svc.name}">${svc.name}</div>`;
+          if (svc.temperature !== null && svc.temperature !== undefined) {
+            cardContent += `<div class="temp-tag">🌡️ ${svc.temperature.toFixed(1)}°C</div>`;
+          }
+
+          sq.innerHTML = cardContent;
           grid.appendChild(sq);
         });
 
@@ -93,6 +142,11 @@
       badge.className = `badge status-${svc.status}`;
 
       let condHtml = `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>Host:</strong> ${details.hostname || 'N/A'}</p>`;
+      
+      if (svc.temperature !== null && svc.temperature !== undefined) {
+        condHtml += `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>PDU Temp:</strong> <span style="color: #38bdf8; font-weight: bold;">${svc.temperature.toFixed(1)}°C</span></p>`;
+      }
+
       condHtml += `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>Latency:</strong> ${details.duration ? (details.duration / 1000000).toFixed(2) + ' ms' : 'N/A'}</p>`;
       condHtml += '<h5 style="margin: 0.4rem 0 0.15rem 0; font-size: 0.8rem;">Conditions:</h5><ul>';
       

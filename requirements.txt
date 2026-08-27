@@ -1,5 +1,11 @@
 Flask>=3.0.0
-requests>=2.31.0
 
 gunicorn>=21.2.0  # For Linux/macOS
 # waitress>=2.1.2   # For Windows
+# Web Frameworks
+fastapi>=0.110.0
+uvicorn>=0.28.0
+
+# HTTP & Data Parsing
+requests>=2.31.0
+pyyaml>=6.0.1

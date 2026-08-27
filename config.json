@@ -1,11 +1,24 @@
 {
   "refresh_interval_seconds": 60,
   "endpoints": [
-    "https://entappmon.fau.edu/api/v1/endpoints/statuses"
+      {
+        "url": "https://entappmon.fau.edu/api/v1/endpoints/statuses",
+        "verify_ssl": true
+      },
+      {
+        "url": "https://gatus.hpc.fau.edu/api/v1/endpoints/statuses",
+        "verify_ssl": false        
+      },
+      {
+        "url": "http://gatus.hpc.fau.edu/metrics",
+        "type": "prometheus",
+        "verify_ssl": false
+      }      
   ],
   "filters": {
     "exclude": [
-      "*test*"      
+      "*test*",
+      "*dev*"   
     ],
     "include": [
       {

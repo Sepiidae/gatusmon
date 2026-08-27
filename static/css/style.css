@@ -17,6 +17,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-dark);
   color: #f8fafc;
+  font-size: 14pt;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -35,13 +36,13 @@ header {
 
 header h1 {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .timestamp {
-  font-size: 0.65rem;
+  font-size: 0.9rem;
   opacity: 0.8;
 }
 
@@ -54,8 +55,8 @@ main {
 
 /* Multi-Column Layout: Flow top-to-bottom, then left-to-right */
 .vertical-groups-wrapper {
-  column-width: 280px;
-  column-gap: 0.35rem;
+  column-width: 320px; /* Slightly widened to give text extra room */
+  column-gap: 0.5rem;
   height: 100%;
 }
 
@@ -66,53 +67,57 @@ main {
   background: rgba(30, 41, 59, 0.4);
   border: 1px solid #334155;
   border-radius: 4px;
-  padding: 0.3rem 0.4rem;
-  margin-bottom: 0.35rem;
+  padding: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .group-title {
-  font-size: 0.68rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #94a3b8;
-  margin: 0 0 0.2rem 0;
+  margin: 0 0 0.4rem 0;
   border-bottom: 1px solid #334155;
-  padding-bottom: 0.1rem;
+  padding-bottom: 0.2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .group-count {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: #64748b;
 }
 
+/* Full Width Stacked Card Grid */
 .grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
 }
 
-/* Ultra-Compact Micro Status Boxes (40x40px) */
+/* Wide Rectangular Service Cards */
 .square {
-  width: 40px;
-  height: 40px;
-  border-radius: 3px;
+  width: 100%;
+  min-height: 38px;
+  height: auto;
+  border-radius: 4px;
   cursor: pointer;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 0.15rem;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
   transition: transform 0.1s ease, filter 0.1s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   user-select: none;
 }
 
 .square:hover {
-  transform: scale(1.15);
-  filter: brightness(1.25);
+  transform: scale(1.02);
+  filter: brightness(1.15);
   z-index: 10;
 }
 
@@ -121,16 +126,31 @@ main {
 .status-critical { background-color: var(--status-critical); color: #ffffff; }
 .status-unknown { background-color: var(--status-unknown); color: #ffffff; }
 
+/* Legible, Readable Title Text */
 .square .title {
-  font-weight: 700;
-  font-size: 0.5rem;
-  line-height: 1;
-  text-align: center;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  text-align: left;
+  white-space: normal;
   word-break: break-word;
+  overflow: visible;
+  margin-right: 0.4rem;
+}
+
+/* Inline Temperature Tag */
+.temp-tag {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  margin-left: auto;
 }
 
 /* Modal Overlay */

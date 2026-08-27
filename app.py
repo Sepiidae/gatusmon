@@ -1,5 +1,6 @@
 import time
 import json
+import re
 import fnmatch
 import threading
 import requests
@@ -11,10 +12,42 @@ STATUS_CACHE = {"groups": {}, "last_updated": None}
 CACHE_LOCK = threading.Lock()
 
 def load_config():
-    with open("config.json", "r") as f:
-        return json.load(f)
+    try:
+        with open("config.json", "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[Config Error] Failed to load config.json: {e}")
+        return {}
 
 CONFIG = load_config()
+
+def parse_prometheus_pdu_data(text):
+    """Parses Prometheus text format to extract PDU temperature and health status."""
+    pdu_data = {}
+    
+    temp_pattern = re.compile(
+        r'pdu_temperature_celsius\s*\{\s*pdu_name=["\']([^"\']+)["\']\s*\}\s+([0-9.]+)'
+    )
+    health_pattern = re.compile(
+        r'pdu_health_status\s*\{\s*pdu_name=["\']([^"\']+)["\']\s*\}\s+([0-9.]+)'
+    )
+
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        temp_match = temp_pattern.search(line)
+        if temp_match:
+            pdu_name, temp_val = temp_match.groups()
+            pdu_data.setdefault(pdu_name, {})["temperature"] = float(temp_val)
+
+        health_match = health_pattern.search(line)
+        if health_match:
+            pdu_name, health_val = health_match.groups()
+            pdu_data.setdefault(pdu_name, {})["health_status"] = float(health_val)
+
+    return pdu_data
 
 def evaluate_service_filter(key, name, original_group):
     filters = CONFIG.get("filters", {})
@@ -42,7 +75,6 @@ def evaluate_service_filter(key, name, original_group):
     return True, original_group
 
 def normalize_contact(contact_raw):
-    """Ensures phones and emails are always returned as list structures."""
     if not contact_raw:
         return None
 
@@ -86,49 +118,91 @@ def evaluate_status(service_data):
     return "ok" if (latest.get("success", False) and all_passed) else "warning"
 
 def background_fetcher():
+    """Background loop with strict per-request timeouts and error isolation."""
     while True:
-        interval = CONFIG.get("refresh_interval_seconds", 60)
+        # Reload config on each iteration so changes apply automatically
+        config = load_config()
+        interval = config.get("refresh_interval_seconds", 60)
+        
         fetched_services = []
+        prom_pdu_metrics = {}
 
-        for url in CONFIG.get("endpoints", []):
+        for endpoint in config.get("endpoints", []):
+            url = endpoint if isinstance(endpoint, str) else endpoint.get("url")
+            verify_ssl = endpoint.get("verify_ssl", True) if isinstance(endpoint, dict) else True
+            endpoint_type = endpoint.get("type", "gatus") if isinstance(endpoint, dict) else "gatus"
+            
+            if not url:
+                continue
+
             try:
-                resp = requests.get(url, timeout=10)
+                # STRICT TIMEOUT: (3s connect timeout, 3s read timeout)
+                # Prevents any hung server from blocking the thread
+                resp = requests.get(url, timeout=(3.0, 3.0), verify=verify_ssl)
+                
                 if resp.status_code == 200:
-                    data = resp.json()
-                    if isinstance(data, list):
-                        fetched_services.extend(data)
+                    if endpoint_type == "prometheus" or "text/plain" in resp.headers.get("Content-Type", ""):
+                        metrics_parsed = parse_prometheus_pdu_data(resp.text)
+                        prom_pdu_metrics.update(metrics_parsed)
                     else:
-                        fetched_services.append(data)
-            except Exception as e:
-                print(f"[Worker Error] Fetch failed for {url}: {e}")
+                        data = resp.json()
+                        if isinstance(data, list):
+                            fetched_services.extend(data)
+                        else:
+                            fetched_services.append(data)
+                else:
+                    print(f"[Worker Warning] HTTP {resp.status_code} from {url}")
 
+            except requests.exceptions.Timeout:
+                print(f"[Worker Timeout] Endpoint timed out after 3s: {url}")
+            except requests.exceptions.RequestException as e:
+                print(f"[Worker Error] Connection failed for {url}: {e}")
+            except Exception as e:
+                print(f"[Worker Error] Unexpected error processing {url}: {e}")
+
+        # Group valid services
         grouped_services = {}
 
         for svc in fetched_services:
-            key = svc.get("key", "")
-            name = svc.get("name", "Unknown Service")
-            raw_group = svc.get("group", "General")
+            try:
+                key = svc.get("key", "")
+                name = svc.get("name", "Unknown Service")
+                raw_group = svc.get("group", "General")
 
-            allowed, assigned_group = evaluate_service_filter(key, name, raw_group)
-            if not allowed:
-                continue
+                allowed, assigned_group = evaluate_service_filter(key, name, raw_group)
+                if not allowed:
+                    continue
 
-            if assigned_group not in grouped_services:
-                grouped_services[assigned_group] = []
+                if assigned_group not in grouped_services:
+                    grouped_services[assigned_group] = []
 
-            contact = get_effective_contact(key, assigned_group)
+                contact = get_effective_contact(key, assigned_group)
 
-            grouped_services[assigned_group].append({
-                "name": name,
-                "group": assigned_group,
-                "key": key,
-                "status": evaluate_status(svc),
-                "details": svc.get("results", [])[-1] if svc.get("results") else {},
-                "contact": contact
-            })
+                # Match PDU metrics
+                matched_pdu = prom_pdu_metrics.get(name) or prom_pdu_metrics.get(key)
+                temperature = matched_pdu.get("temperature") if matched_pdu else None
 
+                status_val = evaluate_status(svc)
+                if matched_pdu and matched_pdu.get("health_status") == 0.0:
+                    status_val = "critical"
+
+                grouped_services[assigned_group].append({
+                    "name": name,
+                    "group": assigned_group,
+                    "key": key,
+                    "status": status_val,
+                    "temperature": temperature,
+                    "details": svc.get("results", [])[-1] if svc.get("results") else {},
+                    "contact": contact
+                })
+            except Exception as e:
+                print(f"[Worker Error] Failed parsing service object: {e}")
+
+        # Safely update memory cache
         with CACHE_LOCK:
-            STATUS_CACHE["groups"] = grouped_services
+            # Only overwrite group data if we retrieved results, otherwise retain last known good state
+            if grouped_services or not STATUS_CACHE["groups"]:
+                STATUS_CACHE["groups"] = grouped_services
             STATUS_CACHE["last_updated"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
         time.sleep(interval)
