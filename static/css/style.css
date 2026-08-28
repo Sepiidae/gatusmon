@@ -18,10 +18,9 @@ body {
   background-color: var(--bg-dark);
   color: #f8fafc;
   font-size: 14pt;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 header {
@@ -49,8 +48,7 @@ header h1 {
 main {
   padding: 0.75rem;
   flex: 1;
-  overflow-y: auto; /* Natural vertical scrolling */
-  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Incidents Banner */
@@ -85,12 +83,12 @@ main {
   margin: 0 0 0.5rem 0;
 }
 
-/* Operational Groups Responsive Grid */
+/* Operational Groups Stack (100% Page Width per Group) */
 .groups-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  align-items: start;
+  width: 100%;
 }
 
 .group-container {
@@ -99,6 +97,7 @@ main {
   border-radius: 6px;
   padding: 0.5rem;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .group-title {
@@ -120,16 +119,15 @@ main {
   color: #64748b;
 }
 
-/* Card Stack inside groups */
+/* Grid of Service Tiles inside Full-Width Group */
 .grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 0.35rem;
   width: 100%;
 }
 
 .square {
-  width: 100%;
   min-height: 38px;
   border-radius: 4px;
   cursor: pointer;
@@ -153,13 +151,15 @@ main {
 .status-critical { background-color: var(--status-critical); color: #ffffff; }
 .status-unknown { background-color: var(--status-unknown); color: #ffffff; }
 
+/* Keep title names single-line / unwrapped */
 .square .title {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1.25;
   text-align: left;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-right: 0.4rem;
 }
 
@@ -175,6 +175,7 @@ main {
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.4);
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Badges & Modals */

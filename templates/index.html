@@ -15,7 +15,6 @@
   </header>
 
   <main>
-    <!-- Priority Incident Banner for Critical/Warning Services -->
     <section id="incidents-section" class="incidents-container" style="display: none;">
       <div class="incidents-header">
         <span class="incidents-title">⚠️ Active Incidents / Degraded Services</span>
@@ -24,14 +23,12 @@
       <div id="incidents-grid" class="grid"></div>
     </section>
 
-    <!-- Normal Healthy Group Grid -->
     <section id="healthy-section">
       <h2 class="section-heading">Operational Services</h2>
       <div class="groups-grid" id="dashboard-content"></div>
     </section>
   </main>
 
-  <!-- Modal Overlay -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="close-btn" onclick="closeModal()">&times;</button>
@@ -64,7 +61,6 @@
       const incidents = [];
       const healthyGroups = {};
 
-      // 1. Separate degraded/critical services from healthy operational groups
       Object.keys(groups).forEach(groupName => {
         groups[groupName].forEach(svc => {
           if (svc.status === 'critical' || svc.status === 'warning') {
@@ -78,15 +74,12 @@
         });
       });
 
-      // Sort incident services alphabetically by name
       incidents.sort((a, b) => a.name.localeCompare(b.name));
 
-      // Sort services within each operational group alphabetically by name
       Object.keys(healthyGroups).forEach(groupName => {
         healthyGroups[groupName].sort((a, b) => a.name.localeCompare(b.name));
       });
 
-      // Cache globally for modal lookup
       globalData = { incidents, groups: healthyGroups };
 
       renderIncidents(incidents);
@@ -118,8 +111,16 @@
       const container = document.getElementById('dashboard-content');
       container.innerHTML = '';
 
-      // Sort group headings alphabetically
-      const sortedGroupNames = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+      // Sort group names by importance (descending order), fallback to alphabetical order
+      const sortedGroupNames = Object.keys(groups).sort((a, b) => {
+        const priorityA = groups[a][0]?.importance ?? 0;
+        const priorityB = groups[b][0]?.importance ?? 0;
+
+        if (priorityB !== priorityA) {
+          return priorityB - priorityA;
+        }
+        return a.localeCompare(b);
+      });
 
       sortedGroupNames.forEach(groupName => {
         const groupContainer = document.createElement('div');
@@ -136,7 +137,6 @@
         const grid = document.createElement('div');
         grid.className = 'grid';
 
-        // Render services (already pre-sorted by name above)
         groups[groupName].forEach((svc, index) => {
           const card = createServiceCard(svc, () => openModal(groupName, index));
           grid.appendChild(card);

@@ -1,5 +1,17 @@
 {
   "refresh_interval_seconds": 60,
+  "group_priority": {
+    "DATA CENTERS": 100,
+    "INFRASTRUCTURE": 90,
+    "ATHENE": 80,
+    "AS APPS - PRODUCTION": 70,
+    "IAM APPS": 60,
+    "ACADEMIC NETWORKS": 50,
+    "COLDFUSION": 40,
+    "MYPOS": 30,
+    "OWL CLOUD": 20,
+    "RADIATOR": 10
+  },
   "endpoints": [
     {
       "url": "https://entappmon.fau.edu/api/v1/endpoints/statuses",
@@ -41,6 +53,32 @@
       {
         "pattern": "*radiator*",
         "group": "Radiator"
+      },
+      {
+        "pattern": "*MC [0-9]*",
+        "group": "Data Centers"
+      },
+      { 
+        "pattern": "*Bldg.96 Room 331*",
+        "group": "Data Centers"
+      
+
+      },
+      { 
+        "pattern": "*Building 96, Room 107*",
+        "group": "Data Centers"
+      },
+      { 
+        "pattern": "*Bldg.69*",
+        "group": "Data Centers"
+      },
+      { 
+        "pattern": "*MC04*",
+        "group": "Data Centers"
+      },
+      { 
+        "pattern": "*Bldg. 96 Room 524*",
+        "group": "Data Centers"
       }
     ]
   },
