@@ -1,13 +1,21 @@
+{{/*
+Expand the name of the chart.
+*/}}
 {{- define "fau-monitor.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
 {{- define "fau-monitor.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains .Chart.Chart.name .Release.Name }}
+{{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
@@ -15,31 +23,40 @@
 {{- end }}
 {{- end }}
 
-{{- define "fau-monitor.label" -}}
-app.kubernetes.io/name: {{ include "fau-monitor.name" . }}
-{{- if .Values.fullnameOverride }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- else }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-chart: {{ .Chart.Name }}
-version: {{ .Chart.Version }}
-app.kubernetes.io/release-name: {{ .Release.Name }}
-app.kubernetes.io/release-creator: {{ .Release.Service }}
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "fau-monitor.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{/*
+Common labels
+*/}}
+{{- define "fau-monitor.labels" -}}
+helm.sh/chart: {{ include "fau-monitor.chart" . }}
+{{ include "fau-monitor.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
 {{- define "fau-monitor.selectorLabels" -}}
-{{- include "fau-monitor.label" . | nindent 4 }}
+app.kubernetes.io/name: {{ include "fau-monitor.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{- define "fau-monitor.labelSelector" -}}
-{{- include "fau-monitor.selectorLabels" . | nindent 4 }}
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "fau-monitor.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "fau-monitor.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
 {{- end }}
-
-{{- define "fau-monitor.matchLabels" -}}
-{{- include "fau-monitor.selectorLabels" . | nindent 4 }}
-{{- end }}
-
-{{- define "fau-monitor.appLabelSelector" -}}
-{{- include "fau-monitor.selectorLabels" . | nindent 4 }}
 {{- end }}

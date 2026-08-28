@@ -27,7 +27,7 @@ body {
 header {
   background-color: var(--fau-blue);
   border-bottom: 2px solid var(--fau-red);
-  padding: 0.25rem 0.5rem;
+  padding: 0.4rem 0.8rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -42,55 +42,85 @@ header h1 {
 }
 
 .timestamp {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 0.8;
 }
 
 main {
-  padding: 0.35rem;
+  padding: 0.75rem;
   flex: 1;
-  overflow-x: auto;
-  overflow-y: hidden; /* Multi-column wraps horizontally to avoid vertical scroll */
+  overflow-y: auto; /* Natural vertical scrolling */
+  overflow-x: hidden;
 }
 
-/* Multi-Column Layout: Flow top-to-bottom, then left-to-right */
-.vertical-groups-wrapper {
-  column-width: 320px; /* Slightly widened to give text extra room */
-  column-gap: 0.5rem;
-  height: 100%;
+/* Incidents Banner */
+.incidents-container {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--status-critical);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.incidents-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.incidents-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fca5a5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-heading {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+}
+
+/* Operational Groups Responsive Grid */
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.75rem;
+  align-items: start;
 }
 
 .group-container {
-  break-inside: avoid; /* Keeps group sections intact */
-  display: inline-block;
-  width: 100%;
   background: rgba(30, 41, 59, 0.4);
   border: 1px solid #334155;
-  border-radius: 4px;
-  padding: 0.4rem;
-  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  padding: 0.5rem;
+  box-sizing: border-box;
 }
 
 .group-title {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #94a3b8;
   margin: 0 0 0.4rem 0;
   border-bottom: 1px solid #334155;
-  padding-bottom: 0.2rem;
+  padding-bottom: 0.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .group-count {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
-/* Full Width Stacked Card Grid */
+/* Card Stack inside groups */
 .grid {
   display: flex;
   flex-direction: column;
@@ -98,11 +128,9 @@ main {
   width: 100%;
 }
 
-/* Wide Rectangular Service Cards */
 .square {
   width: 100%;
   min-height: 38px;
-  height: auto;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -116,9 +144,8 @@ main {
 }
 
 .square:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
   filter: brightness(1.15);
-  z-index: 10;
 }
 
 .status-ok { background-color: var(--status-ok); color: #ffffff; }
@@ -126,7 +153,6 @@ main {
 .status-critical { background-color: var(--status-critical); color: #ffffff; }
 .status-unknown { background-color: var(--status-unknown); color: #ffffff; }
 
-/* Legible, Readable Title Text */
 .square .title {
   font-weight: 600;
   font-size: 0.85rem;
@@ -134,11 +160,9 @@ main {
   text-align: left;
   white-space: normal;
   word-break: break-word;
-  overflow: visible;
   margin-right: 0.4rem;
 }
 
-/* Inline Temperature Tag */
 .temp-tag {
   display: inline-flex;
   align-items: center;
@@ -153,7 +177,21 @@ main {
   margin-left: auto;
 }
 
-/* Modal Overlay */
+/* Badges & Modals */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.badge-critical {
+  background-color: var(--status-critical);
+  color: white;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -184,16 +222,6 @@ main {
   color: #94a3b8;
   font-size: 1.25rem;
   cursor: pointer;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
 }
 
 .contact-box {

@@ -6,50 +6,6 @@
   <title>FAU Status Monitor</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/custom.css">
-  <style>
-    /* Responsive Grid: Prevents aggressive wrapping by giving cards a wider min-width */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.75rem;
-    }
-
-    /* Transform square styling into wide rectangle service cards */
-    .square {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 48px;
-      padding: 0.6rem 0.85rem;
-      border-radius: 6px;
-      box-sizing: border-box;
-      cursor: pointer;
-    }
-
-    .square .title {
-      font-size: 0.85rem;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-right: 0.5rem;
-    }
-
-    /* Inline helper styling for temperature tags */
-    .temp-tag {
-      display: inline-flex;
-      align-items: center;
-      white-space: nowrap;
-      padding: 0.15rem 0.45rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      border-radius: 4px;
-      background: rgba(15, 23, 42, 0.6);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-    }
-  </style>
 </head>
 <body>
 
@@ -59,9 +15,23 @@
   </header>
 
   <main>
-    <div class="vertical-groups-wrapper" id="dashboard-content"></div>
+    <!-- Priority Incident Banner for Critical/Warning Services -->
+    <section id="incidents-section" class="incidents-container" style="display: none;">
+      <div class="incidents-header">
+        <span class="incidents-title">⚠️ Active Incidents / Degraded Services</span>
+        <span id="incidents-count" class="badge badge-critical">0</span>
+      </div>
+      <div id="incidents-grid" class="grid"></div>
+    </section>
+
+    <!-- Normal Healthy Group Grid -->
+    <section id="healthy-section">
+      <h2 class="section-heading">Operational Services</h2>
+      <div class="groups-grid" id="dashboard-content"></div>
+    </section>
   </main>
 
+  <!-- Modal Overlay -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="close-btn" onclick="closeModal()">&times;</button>
@@ -77,25 +47,81 @@
   </div>
 
   <script>
-    let globalGroups = {};
+    let globalData = { incidents: [], groups: {} };
 
     async function fetchStatus() {
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
-        globalGroups = data.groups || {};
         document.getElementById('last-updated').innerText = `Updated: ${data.last_updated || 'Pending...'}`;
-        renderDashboard(globalGroups);
+        processAndRender(data.groups || {});
       } catch (err) {
         console.error("Failed fetching status data", err);
       }
     }
 
-    function renderDashboard(groups) {
+    function processAndRender(groups) {
+      const incidents = [];
+      const healthyGroups = {};
+
+      // 1. Separate degraded/critical services from healthy operational groups
+      Object.keys(groups).forEach(groupName => {
+        groups[groupName].forEach(svc => {
+          if (svc.status === 'critical' || svc.status === 'warning') {
+            incidents.push(svc);
+          } else {
+            if (!healthyGroups[groupName]) {
+              healthyGroups[groupName] = [];
+            }
+            healthyGroups[groupName].push(svc);
+          }
+        });
+      });
+
+      // Sort incident services alphabetically by name
+      incidents.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Sort services within each operational group alphabetically by name
+      Object.keys(healthyGroups).forEach(groupName => {
+        healthyGroups[groupName].sort((a, b) => a.name.localeCompare(b.name));
+      });
+
+      // Cache globally for modal lookup
+      globalData = { incidents, groups: healthyGroups };
+
+      renderIncidents(incidents);
+      renderHealthyGroups(healthyGroups);
+    }
+
+    function renderIncidents(incidents) {
+      const section = document.getElementById('incidents-section');
+      const grid = document.getElementById('incidents-grid');
+      const count = document.getElementById('incidents-count');
+
+      if (incidents.length === 0) {
+        section.style.display = 'none';
+        grid.innerHTML = '';
+        return;
+      }
+
+      section.style.display = 'block';
+      count.innerText = incidents.length;
+      grid.innerHTML = '';
+
+      incidents.forEach((svc, index) => {
+        const card = createServiceCard(svc, () => openModal('incident', index));
+        grid.appendChild(card);
+      });
+    }
+
+    function renderHealthyGroups(groups) {
       const container = document.getElementById('dashboard-content');
       container.innerHTML = '';
 
-      Object.keys(groups).sort().forEach(groupName => {
+      // Sort group headings alphabetically
+      const sortedGroupNames = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+
+      sortedGroupNames.forEach(groupName => {
         const groupContainer = document.createElement('div');
         groupContainer.className = 'group-container';
 
@@ -110,19 +136,10 @@
         const grid = document.createElement('div');
         grid.className = 'grid';
 
+        // Render services (already pre-sorted by name above)
         groups[groupName].forEach((svc, index) => {
-          const sq = document.createElement('div');
-          sq.className = `square status-${svc.status}`;
-          sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature}°C` : ''}`;
-          sq.onclick = () => openModal(groupName, index);
-
-          let cardContent = `<div class="title" title="${svc.name}">${svc.name}</div>`;
-          if (svc.temperature !== null && svc.temperature !== undefined) {
-            cardContent += `<div class="temp-tag">🌡️ ${svc.temperature.toFixed(1)}°C</div>`;
-          }
-
-          sq.innerHTML = cardContent;
-          grid.appendChild(sq);
+          const card = createServiceCard(svc, () => openModal(groupName, index));
+          grid.appendChild(card);
         });
 
         groupContainer.appendChild(grid);
@@ -130,8 +147,23 @@
       });
     }
 
-    function openModal(groupName, index) {
-      const svc = globalGroups[groupName][index];
+    function createServiceCard(svc, onClickHandler) {
+      const sq = document.createElement('div');
+      sq.className = `square status-${svc.status}`;
+      sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature}°C` : ''}`;
+      sq.onclick = onClickHandler;
+
+      let cardContent = `<div class="title" title="${svc.name}">${svc.name}</div>`;
+      if (svc.temperature !== null && svc.temperature !== undefined) {
+        cardContent += `<div class="temp-tag">🌡️ ${svc.temperature.toFixed(1)}°C</div>`;
+      }
+
+      sq.innerHTML = cardContent;
+      return sq;
+    }
+
+    function openModal(groupKey, index) {
+      const svc = groupKey === 'incident' ? globalData.incidents[index] : globalData.groups[groupKey][index];
       const details = svc.details || {};
       
       document.getElementById('modal-title').innerText = svc.name;
