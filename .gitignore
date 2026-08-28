@@ -1,3 +1,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
+values-test.yaml
+values-prod.yaml
+charts/fau-monitor/templates/secret-faumon-config.yaml

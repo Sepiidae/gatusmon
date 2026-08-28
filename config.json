@@ -14,28 +14,28 @@
   },
   "endpoints": [
     {
-      "url": "https://entappmon.fau.edu/api/v1/endpoints/statuses",
+      "url": "https://entappmon.example.com/api/v1/endpoints/statuses",
       "verify_ssl": true
     },
     {
-      "url": "https://gatus.hpc.fau.edu/api/v1/endpoints/statuses",
+      "url": "https://gatus.hpc.example.com/api/v1/endpoints/statuses",
       "verify_ssl": false
     },
     {
-      "url": "https://boc22asappmon.fau.edu/api/v1/endpoints/statuses",
+      "url": "https://asappsmon.example.com/api/v1/endpoints/statuses",
       "verify_ssl": false
     },
     {
-      "url": "https://librenmstogatos.hpc.fau.edu/health?ids=106,107,108,109,110,117,130,132,133,137,138,14,140,142,143,144,146,147,148,149,151,154,155,156,157,158,159,16,160,163,164,165,175,176,177,18,20,21,22,23,24,263,264,273,278,28,29,30,31,32,33,356,357,358,359,360,362,363,364,365,366,367,369,37,373,374,375,376,377,38,39,396,397,398,399,40,400,401,402,403,404,405,406,407,408,409,41,411,413,414,415,418,42,420,421,422,424,43,44,440,443,444,446,447,448,45,454,457,458,459,46,460,461,462,464,465,466,467,468,469,47,470,471,472,473,475,48,483,485,487,49,498,50,508,51,52,53,532,55,56,560,563,564,57,577,58,587,59,599,60,600,602,603,604,605,61,63,64,65,67,69,70,71,72,725,73,75,76,79,98",
+      "url": "https://librenmstogatos.example.com/health?ids=106,107,108,109,110,117,130,132,133,137,138,14,140,142,143,144,146,147,148,149,151,154,155,156,157,158,159,16,160,163,164,165,175,176,177,18,20,21,22,23,24,263,264,273,278,28,29,30,31,32,33,356,357,358,359,360,362,363,364,365,366,367,369,37,373,374,375,376,377,38,39,396,397,398,399,40,400,401,402,403,404,405,406,407,408,409,41,411,413,414,415,418,42,420,421,422,424,43,44,440,443,444,446,447,448,45,454,457,458,459,46,460,461,462,464,465,466,467,468,469,47,470,471,472,473,475,48,483,485,487,49,498,50,508,51,52,53,532,55,56,560,563,564,57,577,58,587,59,599,60,600,602,603,604,605,61,63,64,65,67,69,70,71,72,725,73,75,76,79,98",
       "verify_ssl": false
     },
     {
-      "url": "https://temperature.hpc.fau.edu/metrics",
+      "url": "https://temperature.hpc.example.com/metrics",
       "type": "prometheus",
       "verify_ssl": false
     },
     {
-      "url": "https://librenmstogatos.hpc.fau.edu/metrics",
+      "url": "https://librenmstogatos.hpc.example.com/metrics",
       "verify_ssl": false,
       "type": "prometheus"
     }
@@ -43,7 +43,7 @@
   "filters": {
     "exclude": [
       "*test*",
-      "*dev*"
+      "*dev*"      
     ],
     "include": [
       {
@@ -97,28 +97,28 @@
     "Radiator T": {
       "name": "Wifi Support Team",
       "phones": [
-        "+1-561-289-8179 (Rhian)",
-        "+1-561-555-0112 (Greg)"
+        "+1-561-555-8179 (John 1)",
+        "+1-561-555-0112 (Doe 1)"
       ],
       "emails": [
-        "security@fau.edu",
-        "hpc@fau.edu"
+        "security@example.com",
+        "hpc@example.com"
       ]
     },
     "Reporting Services": {
       "name": "Reporting Services Support Team",
       "phones": [
-        "+1-561-297-1104"
+        "+1-561-555-1104"
       ],
       "emails": [
-        "Richard Thompson <rthompso@fau.edu>"                
+        "Jane Doe <jdoe@fau.edu>"                
       ]
     },
     "Radiator": {
       "name": "Infrastructure Services Support Team",
       "phones": [
-        "+1-561-289-8179 (Rhian)",
-        "+1-561-297-2940 (Greg)"
+        "+1-561-555-8179 (John 2)",
+        "+1-561-555-2940 (Jane 2)"
       ],
       "emails": [
         "hpc@fau.edu",
@@ -128,20 +128,20 @@
     "Instructional Technologies": {
       "name": "Instructional Technologies Group",
       "phones": [
-        "+1-561-297-2426"
+        "+1-561-555-2426"
       ],
       "emails": [
-        "jloiacon@fau.edu",
-        "cbarger@fau.edu"
+        "moose@example.com",
+        "mouse@example.com"
       ]
     },
     "General": {
       "name": "OIT Central Helpdesk",
       "phones": [
-        "+1-561-297-3999"
+        "+1-561-555-3999"
       ],
       "emails": [
-        "helpdesk@fau.edu"
+        "helpdesk@example.com"
       ]
     }
   },
@@ -149,10 +149,10 @@
     "as-apps---production_crystalreports": {
       "name": "Crystal Reports Lead Specialist",
       "phones": [
-        "+1-561-297-1104"
+        "+1-561-555-1104"
       ],
       "emails": [
-        "Richard Thompson <rthompso@fau.edu>"                
+        "Fox <fox@example.com>"                
       ]
     }
   }
