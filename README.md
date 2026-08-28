@@ -74,4 +74,6 @@ docker run -p 5001:5001 fau-monitor
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 
-       
+## Install Example
+
+helm upgrade -n monitoring --install viewport . 
