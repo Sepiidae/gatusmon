@@ -28,7 +28,7 @@ echo "==> [PROD] Launching application with ${WORKERS} workers on port ${PORT}..
 
 exec gunicorn app:app \
     --workers "${WORKERS}" \
-    --worker-class uvicorn.workers.UvicornWorker \
+    --worker-class gthread \
     --bind "0.0.0.0:${PORT}" \
     --timeout 120 \
     --graceful-timeout 30 \
