@@ -139,6 +139,7 @@ def background_fetcher():
     while True:
         config = load_config()
         interval = config.get("refresh_interval_seconds", 60)
+        temp_unit = config.get("temperature_unit", "C")
         
         # Build case-insensitive priority map
         group_priorities = config.get("group_priority", {})
@@ -189,6 +190,8 @@ def background_fetcher():
                 contact = get_effective_contact(key, assigned_group, config)
                 matched_pdu = prom_pdu_metrics.get(name) or prom_pdu_metrics.get(key)
                 temperature = matched_pdu.get("temperature") if matched_pdu else None
+                if temperature is not None and temp_unit == "F":
+                    temperature = (temperature * 9/5) + 32
 
                 status_val = evaluate_status(svc)
                 if matched_pdu and matched_pdu.get("health_status") == 0.0:
@@ -204,6 +207,7 @@ def background_fetcher():
                     "status": status_val,
                     "importance": importance,
                     "temperature": temperature,
+                    "temperature_unit": temp_unit,
                     "details": svc.get("results", [])[-1] if svc.get("results") else {},
                     "contact": contact
                 })

@@ -1,5 +1,6 @@
 {
   "refresh_interval_seconds": 60,
+  "temperature_unit": "F",
   "group_priority": {
     "DATA CENTERS": 100,
     "INFRASTRUCTURE": 90,

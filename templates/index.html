@@ -150,12 +150,12 @@
     function createServiceCard(svc, onClickHandler) {
       const sq = document.createElement('div');
       sq.className = `square status-${svc.status}`;
-      sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature}°C` : ''}`;
+      sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature.toFixed(1)}${svc.temperature_unit || '°C'}` : ''}`;
       sq.onclick = onClickHandler;
 
       let cardContent = `<div class="title" title="${svc.name}">${svc.name}</div>`;
       if (svc.temperature !== null && svc.temperature !== undefined) {
-        cardContent += `<div class="temp-tag">🌡️ ${svc.temperature.toFixed(1)}°C</div>`;
+        cardContent += `<div class="temp-tag">🌡️ ${svc.temperature.toFixed(1)}${svc.temperature_unit || '°C'}</div>`;
       }
 
       sq.innerHTML = cardContent;
@@ -176,7 +176,7 @@
       let condHtml = `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>Host:</strong> ${details.hostname || 'N/A'}</p>`;
       
       if (svc.temperature !== null && svc.temperature !== undefined) {
-        condHtml += `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>Temp:</strong> <span style="color: #38bdf8; font-weight: bold;">${svc.temperature.toFixed(1)}°C</span></p>`;
+        condHtml += `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>PDU Temp:</strong> <span style="color: #38bdf8; font-weight: bold;">${svc.temperature.toFixed(1)}${svc.temperature_unit || '°C'}</span></p>`;
       }
 
       condHtml += `<p style="font-size: 0.75rem; margin: 0.15rem 0;"><strong>Latency:</strong> ${details.duration ? (details.duration / 1000000).toFixed(2) + ' ms' : 'N/A'}</p>`;

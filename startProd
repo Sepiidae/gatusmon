@@ -4,5 +4,39 @@ cd "$(dirname "$0")"
 
 source .venv/bin/activate
 
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> [PROD] Preparing runtime context..."
+
+# 1. Enforce strict production environment variables
+export PYTHONUNBUFFERED=1
+export ENVIRONMENT="production"
+export DEBUG="false"
+export PORT="${PORT:-5001}"
+
+# 2. Calculate optimal Gunicorn worker count if not specified
+# Formula: (2 * CPU Cores) + 1
+if [ -z "${WORKERS:-}" ]; then
+    CPU_CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)
+    WORKERS=$(( (2 * CPU_CORES) + 1 ))
+fi
+
+echo "==> [PROD] Launching application with ${WORKERS} workers on port ${PORT}..."
+
+
+exec gunicorn pdu_healthz:app \
+    --workers "${WORKERS}" \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind "0.0.0.0:${PORT}" \
+    --timeout 120 \
+    --graceful-timeout 30 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level info
+
+
 # Run with 4 worker threads (suited for async background threads)
 gunicorn --workers 1 --threads 4 --bind 0.0.0.0:5001 app:app
