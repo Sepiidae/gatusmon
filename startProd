@@ -26,7 +26,7 @@ fi
 echo "==> [PROD] Launching application with ${WORKERS} workers on port ${PORT}..."
 
 
-exec gunicorn pdu_healthz:app \
+exec gunicorn app:app \
     --workers "${WORKERS}" \
     --worker-class uvicorn.workers.UvicornWorker \
     --bind "0.0.0.0:${PORT}" \
@@ -38,5 +38,3 @@ exec gunicorn pdu_healthz:app \
     --log-level info
 
 
-# Run with 4 worker threads (suited for async background threads)
-gunicorn --workers 1 --threads 4 --bind 0.0.0.0:5001 app:app
