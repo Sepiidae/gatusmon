@@ -50,11 +50,13 @@ def parse_prometheus_pdu_data(text):
             
             pdu_entry = pdu_data.setdefault(pdu_name, {})
             current_sensor = pdu_entry.get("_temp_sensor")
-
+            if temp_float <= 0:
+                logger.warning("Ignoring non-positive temperature reading for PDU '%s' (sensor: '%s'): %f", pdu_name, sensor_descr, temp_float)
+                continue
             # Prioritization logic:
             # 1. If temperature isn't set yet, set it.
             # 2. If the current reading is NOT 'Ambient', but the new one IS 'Ambient', overwrite it.
-            if "temperature" not in pdu_entry or (current_sensor != "Ambient" and sensor_descr == "Ambient"):
+            if "temperature" not in pdu_entry or (current_sensor != "Ambient" and sensor_descr == "Ambient" ):
                 pdu_entry["temperature"] = temp_float
                 pdu_entry["_temp_sensor"] = sensor_descr
 
@@ -190,6 +192,8 @@ def background_fetcher():
                 contact = get_effective_contact(key, assigned_group, config)
                 matched_pdu = prom_pdu_metrics.get(name) or prom_pdu_metrics.get(key)
                 temperature = matched_pdu.get("temperature") if matched_pdu else None
+                if temperature is not None and temperature == 0:
+                    logger.warning("Temperature reading for service '%s' is 0, which may indicate a sensor issue.", name)
                 if temperature is not None and temp_unit == "F":
                     temperature = (temperature * 9/5) + 32
 

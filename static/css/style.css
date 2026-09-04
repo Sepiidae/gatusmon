@@ -148,6 +148,7 @@ main {
 
 .status-ok { background-color: var(--status-ok); color: #ffffff; }
 .status-warning { background-color: var(--status-warning); color: #000000; }
+.status-temp-warning { background-color: #fde047; color: #000000; }
 .status-critical { background-color: var(--status-critical); color: #ffffff; }
 .status-unknown { background-color: var(--status-unknown); color: #ffffff; }
 

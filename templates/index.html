@@ -149,7 +149,15 @@
 
     function createServiceCard(svc, onClickHandler) {
       const sq = document.createElement('div');
-      sq.className = `square status-${svc.status}`;
+      let statusClass = `status-${svc.status}`;
+      if (svc.temperature !== null && svc.temperature !== undefined) {
+        const temp = svc.temperature;
+        const unit = svc.temperature_unit || 'C';
+        if ((unit === 'F' && temp > 80) || (unit === 'C' && temp > 27)) {
+          statusClass = 'status-temp-warning';
+        }
+      }
+      sq.className = `square ${statusClass}`;
       sq.title = `${svc.name} (${svc.status.toUpperCase()})${svc.temperature !== null && svc.temperature !== undefined ? ` - ${svc.temperature.toFixed(1)}${svc.temperature_unit || '°C'}` : ''}`;
       sq.onclick = onClickHandler;
 

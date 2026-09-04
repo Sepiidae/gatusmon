@@ -4,3 +4,5 @@ __pycache__/
 values-test.yaml
 values-prod.yaml
 charts/fau-monitor/templates/secret-faumon-config.yaml
+config.json
+
