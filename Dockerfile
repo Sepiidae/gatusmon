@@ -6,7 +6,7 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY app.py app.py
-COPY config.json config.json
+COPY config-example.json config.json
 COPY startProd startProd
 COPY requirements.txt requirements.txt
 COPY templates templates
