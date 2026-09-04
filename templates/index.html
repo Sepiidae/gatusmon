@@ -153,8 +153,20 @@
       if (svc.temperature !== null && svc.temperature !== undefined) {
         const temp = svc.temperature;
         const unit = svc.temperature_unit || 'C';
-        if ((unit === 'F' && temp > 80) || (unit === 'C' && temp > 27)) {
-          statusClass = 'status-temp-warning';
+        const thresholdLow = unit === 'F' ? 80 : 27;
+        const thresholdHigh = unit === 'F' ? 100 : 38; // Approx 38C for 100F
+
+        if (temp > thresholdLow) {
+          statusClass = 'temp-gradient-tile';
+          // Calculate interpolation factor (0 to 1)
+          const factor = Math.min(Math.max((temp - thresholdLow) / (thresholdHigh - thresholdLow), 0), 1);
+          // Interpolate between Yellow (#fde047) and Red (#ef4444)
+          // Using HSL for smoother transition: Yellow (57, 97%, 60%) to Red (0, 91%, 50%)
+          const hue = 57 - (factor * 57);
+          const saturation = 97 - (factor * 6);
+          const lightness = 60 - (factor * 10);
+          sq.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+          sq.style.color = '#000000';
         }
       }
       sq.className = `square ${statusClass}`;
