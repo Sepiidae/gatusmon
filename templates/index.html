@@ -14,6 +14,15 @@
     <div class="timestamp" id="last-updated">Updating...</div>
   </header>
 
+  <nav class="view-bar" aria-label="View options">
+    <span class="view-bar-label">View</span>
+    <div class="view-toggle" role="group" aria-label="Service sections">
+      <a class="view-link" data-param="sections" data-value="shown"><span aria-hidden="true">▾</span> Show all sections</a>
+      <a class="view-link" data-param="sections" data-value="hidden"><span aria-hidden="true">▸</span> Hide all sections</a>
+    </div>
+    <span class="view-bar-hint">Bookmark this page to keep the current view</span>
+  </nav>
+
   <main>
     <section id="incidents-section" class="incidents-container" style="display: none;">
       <div class="incidents-header">
@@ -232,6 +241,57 @@
       document.getElementById('modal-overlay').style.display = 'none';
     }
 
+    // --- Bookmarkable view options (URL parameters) ---
+    // Each option maps to a URL parameter; the default value is left out of the URL.
+    const VIEW_OPTIONS = {
+      sections: { values: ['shown', 'hidden'], default: 'shown' }
+    };
+
+    function getView(param) {
+      const opt = VIEW_OPTIONS[param];
+      const value = new URLSearchParams(window.location.search).get(param);
+      return opt.values.includes(value) ? value : opt.default;
+    }
+
+    function viewHref(param, value) {
+      const params = new URLSearchParams(window.location.search);
+      if (value === VIEW_OPTIONS[param].default) {
+        params.delete(param);
+      } else {
+        params.set(param, value);
+      }
+      const query = params.toString();
+      return window.location.pathname + (query ? `?${query}` : '');
+    }
+
+    function applyView() {
+      document.body.classList.toggle('sections-hidden', getView('sections') === 'hidden');
+
+      document.querySelectorAll('.view-link').forEach(link => {
+        const { param, value } = link.dataset;
+        link.href = viewHref(param, value);
+        const active = getView(param) === value;
+        link.classList.toggle('active', active);
+        if (active) {
+          link.setAttribute('aria-current', 'true');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    document.querySelectorAll('.view-link').forEach(link => {
+      link.addEventListener('click', e => {
+        // Let ctrl/cmd/shift/middle-click open the bookmarkable URL in a new tab/window.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        history.pushState(null, '', link.href);
+        applyView();
+      });
+    });
+    window.addEventListener('popstate', applyView);
+
+    applyView();
     fetchStatus();
     setInterval(fetchStatus, 10000);
   </script>
