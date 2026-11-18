@@ -51,7 +51,7 @@ def parse_prometheus_pdu_data(text):
             pdu_entry = pdu_data.setdefault(pdu_name, {})
             current_sensor = pdu_entry.get("_temp_sensor")
             if temp_float <= 0:
-                logger.warning("Ignoring non-positive temperature reading for PDU '%s' (sensor: '%s'): %f", pdu_name, sensor_descr, temp_float)
+                logger.debug("Ignoring non-positive temperature reading for PDU '%s' (sensor: '%s'): %f", pdu_name, sensor_descr, temp_float)
                 continue
             # Prioritization logic:
             # 1. If temperature isn't set yet, set it.
