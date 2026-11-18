@@ -37,6 +37,9 @@ def parse_prometheus_pdu_data(text):
     health_pattern = re.compile(
         r'pdu_health_status\s*\{\s*pdu_name=["\']([^"\']+)["\']\s*\}\s+([0-9.]+)'
     )
+    status_code_pattern = re.compile(
+        r'pdu_status_code\s*\{\s*pdu_name=["\']([^"\']+)["\']\s*\}\s+([0-9.]+)'
+    )
 
     for line in text.splitlines():
         line = line.strip()
@@ -65,11 +68,46 @@ def parse_prometheus_pdu_data(text):
             pdu_name, health_val = health_match.groups()
             pdu_data.setdefault(pdu_name, {})["health_status"] = float(health_val)
 
+        code_match = status_code_pattern.search(line)
+        if code_match:
+            pdu_name, code_val = code_match.groups()
+            pdu_data.setdefault(pdu_name, {})["status_code"] = int(float(code_val))
+
     # Clean up internal metadata key before returning
     for entry in pdu_data.values():
         entry.pop("_temp_sensor", None)
 
     return pdu_data
+
+PDU_STATUS_CODES = {0: "ok", 1: "warning", 2: "critical", 3: "critical"}  # 3 = UNREACHABLE
+
+def pdu_status_level(pdu):
+    """Return 'ok', 'warning', 'critical', or None from a PDU's Prometheus metrics.
+
+    Prefers pdu_status_code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNREACHABLE). Older
+    exporters only publish pdu_health_status, where 0 lumps WARNING and CRITICAL
+    together, so 0 is treated as 'critical' there.
+    """
+    if not pdu:
+        return None
+    if "status_code" in pdu:
+        return PDU_STATUS_CODES.get(pdu["status_code"], "critical")
+    if "health_status" in pdu:
+        return "ok" if pdu["health_status"] >= 1 else "critical"
+    return None
+
+def combine_status(gatus_status, has_gatus_result, pdu_level):
+    """Merge the Gatus result with the PDU exporter's level.
+
+    Gatus is authoritative when it has a result: a PDU problem can only raise an
+    'ok' service to 'warning' (yellow), never force it to 'critical'. With no
+    Gatus result, the PDU level is used directly.
+    """
+    if has_gatus_result:
+        if gatus_status == "ok" and pdu_level in ("warning", "critical"):
+            return "warning"
+        return gatus_status
+    return pdu_level or gatus_status
 
 DEFAULT_TIMEOUT = (3.0, 3.0)  # (connect, read) seconds
 
@@ -282,9 +320,9 @@ def background_fetcher():
                 if temperature is not None and temp_unit == "F":
                     temperature = (temperature * 9/5) + 32
 
-                status_val = evaluate_status(svc)
-                if matched_pdu and matched_pdu.get("health_status") == 0.0:
-                    status_val = "critical"
+                status_val = combine_status(
+                    evaluate_status(svc), bool(svc.get("results")), pdu_status_level(matched_pdu)
+                )
 
                 # Case-insensitive importance extraction
                 importance = priorities_lower.get(assigned_group.strip().lower(), 0)

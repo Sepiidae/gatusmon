@@ -13,10 +13,12 @@ spec:
       {{- include "fau-monitor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        # Roll pods when the config Secret changes; subPath mounts never refresh in place.
+        checksum/config: {{ include (print $.Template.BasePath "/secret-faumon-config.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "fau-monitor.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}

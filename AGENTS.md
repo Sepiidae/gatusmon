@@ -50,7 +50,7 @@ Guidance for AI coding agents and contributors working on **faumon**. This is a 
 ## Data contract (`/api/status`)
 
 - The frontend reads these fields on each service: `name`, `group`, `key`, `status` (`ok`/`critical`/`unknown`), `importance`, `temperature`, `temperature_unit`, `details`, `contact`. Renaming or removing any of them breaks the UI, so change `app.py` and `index.html` together.
-- `temperature` is `null` when no PDU matches. Readings of 0 or below are dropped as sensor errors. A PDU's `health_status == 0` forces the service to `critical`.
+- `temperature` is `null` when no PDU matches. Readings of 0 or below are dropped as sensor errors. PDU status comes from the exporter's `pdu_status_code` (0 OK, 1 WARNING, 2 CRITICAL, 3 UNREACHABLE), or from `pdu_health_status` on older exporters. `combine_status()` merges it with the Gatus result. When Gatus has a result, Gatus decides, and a PDU problem can only turn an `ok` service into `warning` (yellow). With no Gatus result, the PDU level is used directly.
 - PDU metrics are matched to services by exact `name` or `key`.
 - Group priority lookups are case-insensitive. Filter patterns are case-insensitive `fnmatch` globs, checked against both the key and the name. Excludes always win over includes.
 
@@ -75,6 +75,7 @@ There is no automated test suite yet. Before you commit:
 
 - **A push to `main` publishes the `latest` image right away,** and the chart pulls `latest` with `pullPolicy: Always`. Treat every merge to `main` as a production release.
 - When the image and the config both change (for example, a new config key), roll out the new image together with the updated Secret. Old images silently ignore unknown keys.
+- **CI never deploys the Helm chart.** A config change in `secret-faumon-config.yaml` only takes effect after someone runs `helm upgrade viewport charts/fau-monitor -f charts/fau-monitor/values-prod.yaml -n monitoring`. The Deployment carries a `checksum/config` annotation, so that upgrade also rolls the pod; this is needed because `subPath` mounts never refresh in place.
 - Changes to only `README.md` or `.gitignore` don't trigger a build.
 - Gunicorn's `--timeout 120` limits HTTP request handling only. It doesn't affect the background poller.
 
