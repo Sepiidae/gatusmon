@@ -111,13 +111,21 @@ header h1 {
   .view-bar-hint { display: none; }
 }
 
-/* "Hide all sections": collapse each group to its title + count */
-.sections-hidden .group-container .grid { display: none; }
-.sections-hidden .group-title {
+/* Collapsed group: title + count only ("Hide all sections" or a clicked title) */
+.group-container.collapsed .grid { display: none; }
+.group-container.collapsed .group-title {
   margin: 0;
-  border-bottom: none;
+  border-bottom-color: transparent;
   padding-bottom: 0;
 }
+
+.group-chevron {
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.25rem;
+  transition: transform 0.15s ease;
+}
+.group-container.collapsed .group-chevron { transform: rotate(-90deg); }
 
 main {
   padding: 0.75rem;
@@ -186,6 +194,26 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Rendered as a <button> so it can toggle the section */
+  width: 100%;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-title:hover { color: #f8fafc; }
+
+.group-title:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .group-count {

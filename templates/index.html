@@ -134,13 +134,16 @@
       sortedGroupNames.forEach(groupName => {
         const groupContainer = document.createElement('div');
         groupContainer.className = 'group-container';
+        groupContainer.dataset.group = groupName;
 
-        const groupTitle = document.createElement('div');
+        const groupTitle = document.createElement('button');
+        groupTitle.type = 'button';
         groupTitle.className = 'group-title';
         groupTitle.innerHTML = `
-          <span>${groupName}</span>
+          <span><span class="group-chevron" aria-hidden="true">▾</span>${groupName}</span>
           <span class="group-count">${groups[groupName].length}</span>
         `;
+        groupTitle.addEventListener('click', () => toggleGroup(groupName));
         groupContainer.appendChild(groupTitle);
 
         const grid = document.createElement('div');
@@ -154,6 +157,8 @@
         groupContainer.appendChild(grid);
         container.appendChild(groupContainer);
       });
+
+      updateGroupStates();
     }
 
     function createServiceCard(svc, onClickHandler) {
@@ -264,8 +269,33 @@
       return window.location.pathname + (query ? `?${query}` : '');
     }
 
+    // Groups the user clicked to flip away from the bookmarked default (in memory;
+    // survives the 10s refresh, cleared when Show all / Hide all is chosen).
+    const groupOverrides = new Set();
+
+    function isGroupCollapsed(groupName) {
+      return (getView('sections') === 'hidden') !== groupOverrides.has(groupName);
+    }
+
+    function updateGroupStates() {
+      document.querySelectorAll('.group-container').forEach(container => {
+        const collapsed = isGroupCollapsed(container.dataset.group);
+        container.classList.toggle('collapsed', collapsed);
+        const title = container.querySelector('.group-title');
+        title.setAttribute('aria-expanded', String(!collapsed));
+        title.title = collapsed ? 'Show this section' : 'Hide this section';
+      });
+    }
+
+    function toggleGroup(groupName) {
+      if (!groupOverrides.delete(groupName)) {
+        groupOverrides.add(groupName);
+      }
+      updateGroupStates();
+    }
+
     function applyView() {
-      document.body.classList.toggle('sections-hidden', getView('sections') === 'hidden');
+      updateGroupStates();
 
       document.querySelectorAll('.view-link').forEach(link => {
         const { param, value } = link.dataset;
@@ -286,10 +316,14 @@
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
         e.preventDefault();
         history.pushState(null, '', link.href);
+        groupOverrides.clear();
         applyView();
       });
     });
-    window.addEventListener('popstate', applyView);
+    window.addEventListener('popstate', () => {
+      groupOverrides.clear();
+      applyView();
+    });
 
     applyView();
     fetchStatus();
