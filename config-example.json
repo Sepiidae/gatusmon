@@ -20,7 +20,8 @@
     },
     {
       "url": "https://gatus.hpc.example.com/api/v1/endpoints/statuses",
-      "verify_ssl": false
+      "verify_ssl": false,
+      "timeout_seconds": [3, 15]
     },
     {
       "url": "https://asappsmon.example.com/api/v1/endpoints/statuses",

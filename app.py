@@ -71,6 +71,22 @@ def parse_prometheus_pdu_data(text):
 
     return pdu_data
 
+DEFAULT_TIMEOUT = (3.0, 3.0)  # (connect, read) seconds
+
+def parse_timeout(value, fallback):
+    """Accepts a number (applied to connect and read) or a [connect, read] pair."""
+    if value is None:
+        return fallback
+    try:
+        if isinstance(value, (list, tuple)):
+            if len(value) != 2:
+                raise ValueError("expected [connect, read]")
+            return (float(value[0]), float(value[1]))
+        return (float(value), float(value))
+    except (TypeError, ValueError) as e:
+        logger.warning("Invalid timeout %r (%s); using %s", value, e, fallback)
+        return fallback
+
 def evaluate_service_filter(key, name, original_group, config):
     filters = config.get("filters", {})
     exclude_patterns = filters.get("exclude", [])
@@ -150,17 +166,19 @@ def background_fetcher():
         fetched_services = []
         prom_pdu_metrics = {}
         endpoints = config.get("endpoints", [])
+        default_timeout = parse_timeout(config.get("default_timeout_seconds"), DEFAULT_TIMEOUT)
 
         for endpoint in endpoints:
             url = endpoint if isinstance(endpoint, str) else endpoint.get("url")
             verify_ssl = endpoint.get("verify_ssl", True) if isinstance(endpoint, dict) else True
             endpoint_type = endpoint.get("type", "gatus") if isinstance(endpoint, dict) else "gatus"
-            
+            timeout = parse_timeout(endpoint.get("timeout_seconds"), default_timeout) if isinstance(endpoint, dict) else default_timeout
+
             if not url:
                 continue
 
             try:
-                resp = requests.get(url, timeout=(3.0, 3.0), verify=verify_ssl)
+                resp = requests.get(url, timeout=timeout, verify=verify_ssl)
                 if resp.status_code == 200:
                     content_type = resp.headers.get("Content-Type", "")
                     if endpoint_type == "prometheus" or "text/plain" in content_type:

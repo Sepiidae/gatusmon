@@ -37,7 +37,12 @@ A lightweight, real-time service status dashboard built with Python, Flask, and 
 
 The application behavior is driven by `config.json`. Key sections include:
 
-- `endpoints`: A list of URLs to poll.
+- `endpoints`: A list of URLs to poll. Each entry may set:
+    - `url`: The endpoint URL.
+    - `type`: `gatus` (default) or `prometheus`.
+    - `verify_ssl`: Verify TLS certificates (default `true`).
+    - `timeout_seconds`: Request timeout. Either a number (used for both connect and read) or a `[connect, read]` pair, e.g. `[3, 15]`. Defaults to `default_timeout_seconds`.
+- `default_timeout_seconds`: Timeout used by endpoints that don't set their own (same format as above). Defaults to `[3, 3]`.
 - `filters`: 
     - `exclude`: Patterns to ignore specific services.
     - `include`: Rules to map services to specific groups.
