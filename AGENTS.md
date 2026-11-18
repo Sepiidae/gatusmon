@@ -43,6 +43,8 @@ Guidance for AI coding agents and contributors working on **faumon**. This is a 
 - If a poll cycle returns no services at all, the previous cache is kept. That way, a total outage of upstream monitors doesn't blank the dashboard. Don't remove this guard.
 - Each failure is logged per endpoint and the loop continues. Never let one endpoint, or one malformed service object, stop the whole cycle.
 - **The poller starts when the module is imported,** so every Gunicorn worker runs its own copy. More workers means more load on the upstream endpoints. Keep this in mind before moving to a shared cache or changing the worker count.
+- **Every failed fetch must log a specific reason.** The poller distinguishes connect timeout, read timeout, TLS error, connection error, non-200 response (with a body snippet), invalid JSON, unexpected payload shape, and empty results. When you add new handling, keep it this specific. Catch narrow `requests` exceptions before broad ones, because `requests.exceptions.JSONDecodeError` also counts as a `RequestException`.
+- Each cycle logs a one-line summary: INFO when every endpoint succeeded, WARNING when any failed. It also warns if the cycle took longer than `refresh_interval_seconds`, and when old cached data is kept. Per-endpoint success messages are DEBUG.
 - Shared state lives in `STATUS_CACHE`. Always read or write it while holding `CACHE_LOCK`.
 
 ## Data contract (`/api/status`)

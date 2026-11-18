@@ -167,6 +167,11 @@ def background_fetcher():
         prom_pdu_metrics = {}
         endpoints = config.get("endpoints", [])
         default_timeout = parse_timeout(config.get("default_timeout_seconds"), DEFAULT_TIMEOUT)
+        if not endpoints:
+            logger.warning("No endpoints configured in config.json; nothing to poll")
+
+        cycle_start = time.monotonic()
+        endpoints_ok = 0
 
         for endpoint in endpoints:
             url = endpoint if isinstance(endpoint, str) else endpoint.get("url")
@@ -175,22 +180,84 @@ def background_fetcher():
             timeout = parse_timeout(endpoint.get("timeout_seconds"), default_timeout) if isinstance(endpoint, dict) else default_timeout
 
             if not url:
+                logger.warning("Skipping endpoint entry with no 'url': %r", endpoint)
                 continue
 
+            started = time.monotonic()
             try:
                 resp = requests.get(url, timeout=timeout, verify=verify_ssl)
-                if resp.status_code == 200:
-                    content_type = resp.headers.get("Content-Type", "")
-                    if endpoint_type == "prometheus" or "text/plain" in content_type:
-                        prom_pdu_metrics.update(parse_prometheus_pdu_data(resp.text))
+                elapsed = time.monotonic() - started
+
+                if resp.status_code != 200:
+                    logger.error(
+                        "Failed loading %s status from %s: HTTP %s after %.2fs (body: %.200s)",
+                        endpoint_type, url, resp.status_code, elapsed, resp.text.strip()
+                    )
+                    continue
+
+                content_type = resp.headers.get("Content-Type", "")
+                if endpoint_type == "prometheus" or "text/plain" in content_type:
+                    metrics = parse_prometheus_pdu_data(resp.text)
+                    if not metrics:
+                        logger.warning("No PDU metrics parsed from %s (%.2fs)", url, elapsed)
+                    prom_pdu_metrics.update(metrics)
+                    logger.debug("Loaded %d PDU metrics from %s in %.2fs", len(metrics), url, elapsed)
+                else:
+                    data = resp.json()
+                    if isinstance(data, list):
+                        if not data:
+                            logger.warning("Gatus endpoint %s returned an empty status list (%.2fs)", url, elapsed)
+                        fetched_services.extend(data)
+                        count = len(data)
+                    elif isinstance(data, dict):
+                        fetched_services.append(data)
+                        count = 1
                     else:
-                        data = resp.json()
-                        if isinstance(data, list):
-                            fetched_services.extend(data)
-                        else:
-                            fetched_services.append(data)
-            except Exception as e:
-                logger.error("Error connecting to %s: %s", url, e)
+                        logger.error(
+                            "Unexpected Gatus payload from %s: expected list or object, got %s",
+                            url, type(data).__name__
+                        )
+                        continue
+                    logger.debug("Loaded %d services from %s in %.2fs", count, url, elapsed)
+
+                endpoints_ok += 1
+
+            except requests.exceptions.ConnectTimeout:
+                logger.error(
+                    "Timeout connecting to %s: no connection within %.1fs (connect timeout)",
+                    url, timeout[0]
+                )
+            except requests.exceptions.ReadTimeout:
+                logger.error(
+                    "Timeout reading from %s: no response within %.1fs (read timeout; consider raising 'timeout_seconds')",
+                    url, timeout[1]
+                )
+            except requests.exceptions.SSLError as e:
+                logger.error("TLS/SSL error for %s (verify_ssl=%s): %s", url, verify_ssl, e)
+            except requests.exceptions.ConnectionError as e:
+                logger.error("Connection error for %s: %s", url, e)
+            except requests.exceptions.JSONDecodeError as e:
+                logger.error(
+                    "Invalid JSON from %s (Content-Type %r): %s (body: %.200s)",
+                    url, resp.headers.get("Content-Type"), e, resp.text.strip()
+                )
+            except requests.exceptions.RequestException as e:
+                logger.error("Request to %s failed: %s", url, e)
+            except Exception:
+                logger.exception("Unexpected error loading status from %s", url)
+
+        cycle_elapsed = time.monotonic() - cycle_start
+        failed = len(endpoints) - endpoints_ok
+        log_cycle = logger.warning if failed else logger.info
+        log_cycle(
+            "Poll cycle finished in %.2fs: %d/%d endpoints OK, %d services, %d PDU metrics",
+            cycle_elapsed, endpoints_ok, len(endpoints), len(fetched_services), len(prom_pdu_metrics)
+        )
+        if cycle_elapsed > interval:
+            logger.warning(
+                "Poll cycle took %.2fs, longer than refresh_interval_seconds (%ss); "
+                "reduce endpoint timeouts or raise the interval", cycle_elapsed, interval
+            )
 
         grouped_services = {}
 
@@ -239,6 +306,11 @@ def background_fetcher():
         with CACHE_LOCK:
             if grouped_services or not STATUS_CACHE["groups"]:
                 STATUS_CACHE["groups"] = grouped_services
+            else:
+                logger.warning(
+                    "No services loaded this cycle; keeping previous data from %s",
+                    STATUS_CACHE["last_updated"]
+                )
             STATUS_CACHE["last_updated"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
         time.sleep(interval)
